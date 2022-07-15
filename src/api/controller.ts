@@ -1,16 +1,35 @@
 import {Item, ReservationRequest, createReservationTable, createItemTable, ItemRequest} from './model';
 import { Response } from 'express';
-const { Client, Pool } = require('pg');
+import { Client } from 'pg';
 
 export class Controller {
     
-    client = new Client();
-    
-    constructor() { 
-        this.client.query(createReservationTable);
-        this.client.query(createItemTable);
-    }
+    client = new Client({
+        user: 'user',
+        host: 'localhost',
+        database: 'api',
+        password: 'Password1!',
+        port: 5432,
+    });
 
+    constructor() { 
+        this.client.connect();
+        this.client.query(createReservationTable, (e: Error) =>{
+            if (e) {
+                console.log(`[ERROR] - ${e}`);
+            } else {
+                console.log('Created Reservations Table.')
+            }
+        });
+        this.client.query(createItemTable,(e: Error) =>{
+            if (e) {
+                console.log(`[ERROR] - ${e}`);
+            } else {
+                console.log('Created Items Table.')
+            }
+        });
+    }
+/*
     reserve = async (req: ReservationRequest, res: Response) => {
         const data = req.body;
         const item: Item = await this.client.query('SELECT * FROM items WHERE name=$1', data.item);
@@ -46,19 +65,19 @@ export class Controller {
     showAllReservations = async (req: ReservationRequest, res: Response) =>{
 
     }
-    
+    */
     listAllItems = async (req: ItemRequest, res: Response) => {
-        const { items } = await this.client.query('SELECT * FROM items', 
+        const {items} = await this.client.query('SELECT * FROM items ORDER BY id ASC', 
             (e: Error) => {
                 if (e) {
                     res.send(e);
                     console.log(`[ERROR] - ${e}`);
-                } else {
-                    res.json(items);
-                    console.log('[GET] - Sent all items.');
                 }
             }
         );
+        res.json(items);
+        console.log(items)
+        console.log('[GET] - Sent all items.');
     }
 
     addItem = async (req: ItemRequest, res: Response) => {

@@ -37,20 +37,20 @@ export interface ReservationRequest extends Express.Request {
 
 export const createReservationTable = `
     CREATE TABLE IF NOT EXISTS reservations(
-        ID int NOT NULL PRIMARY KEY AUTO_INCREMENT,
-        item char,
-        reservee char,
-        startDate date,
-        endDate date,
-        returned boolean
+        ID SERIAL PRIMARY KEY,
+        item TEXT,
+        reservee TEXT,
+        startDate DATE,
+        endDate DATE,
+        returned BOOLEAN
     );
 `
 
 export const createItemTable = `
     CREATE TABLE IF NOT EXISTS items(
-        ID int NOT NULL PRIMARY KEY AUTO_INCREMENT,
-        name char,
-        inventory int,
-        holderID int
+        ID SERIAL PRIMARY KEY,
+        name TEXT,
+        inventory INT,
+        holderID INT
     );
 `
