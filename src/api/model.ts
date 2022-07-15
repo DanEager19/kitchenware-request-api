@@ -17,6 +17,7 @@ export interface ItemRequest extends Express.Request{
 export interface Reservation {
     id: Number,
     item: String, 
+    //Email Address
     reservee: String,
     startDate: Date,
     endDate: Date,
@@ -33,3 +34,23 @@ export interface ReservationRequest extends Express.Request {
         returned: Boolean
     }
 }
+
+export const createReservationTable = `
+    CREATE TABLE IF NOT EXISTS reservations(
+        ID int NOT NULL PRIMARY KEY AUTO_INCREMENT,
+        item char,
+        reservee char,
+        startDate date,
+        endDate date,
+        returned boolean
+    );
+`
+
+export const createItemTable = `
+    CREATE TABLE IF NOT EXISTS items(
+        ID int NOT NULL PRIMARY KEY AUTO_INCREMENT,
+        name char,
+        isReserved boolean,
+        holderID int
+    );
+`

@@ -1,7 +1,9 @@
 import { Application } from "express";
-import controller = require('./controller');
+import { Controller } from './controller'; 
 
 export function Routes(app: Application) {
+    const controller = new Controller;
+    
     app.route('/reserve')
         .get(controller.showAllReservations)
         .post(controller.reserve)
