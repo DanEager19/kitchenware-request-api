@@ -7,6 +7,10 @@ Express Server --> PostgreSQL
     - If overlap, return current renter/duration
 - Cancel Reservation
 - Show All Reservations
+- Add Item
+- List Items
+- Update Item
+- Remove Item
 # Datasets
 - Item
     - ID: Int
