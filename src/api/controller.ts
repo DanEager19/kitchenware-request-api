@@ -11,39 +11,47 @@ export class Controller {
         this.client.query(createItemTable);
     }
 
-    async reserve(req: ReservationRequest, res: Response) {
-        const item: Item = await this.client.query('SELECT * FROM items WHERE name=$1', req.body.item);
+    reserve = async (req: ReservationRequest, res: Response) => {
+        req.body.returned = false;
+        const data = req.body;
+        const item: Item = await this.client.query('SELECT * FROM items WHERE name=$1', data.item);
         if (item.isReserved) {
-            res.send(`Cannot Reserve. ${req.body.reservee} has ${req.body.item} until ${req.body.endDate}.`);
+            res.send(`Cannot Reserve. ${data.reservee} has ${data.item} until ${data.endDate}.`);
         } else {
             item.isReserved = true;
-            await this.client.query('INSERT INTO reservations VALUES($1)', [])
+            await this.client.query('INSERT INTO reservations VALUES($1, $2, $3, $4, $5)', [
+                data.item,
+                data.reservee,
+                data.startDate,
+                data.endDate,
+                data.returned
+            ])
             res.send('Success! Confirmation email sent.')
         }
     }
 
-    async cancel() { 
+    cancel = async (req: ReservationRequest, res: Response) =>{ 
 
     }
 
-    async showAllReservations() {
+    showAllReservations = async (req: ReservationRequest, res: Response) =>{
 
     }
 
-    async addItem() {
+    addItem = async (req: ReservationRequest, res: Response) => {
 
     }
 
-    async listAllItems(req: ReservationRequest, res: Response) {
+    listAllItems = async (req: ReservationRequest, res: Response) => {
         const { items } = await this.client.query('SELECT * FROM items');
         res.json(items);
     }
 
-    async updateItem() {
+    updateItem = async (req: ReservationRequest, res: Response) => {
 
     }
 
-    async removeItem() {
+    removeItem= async (req: ReservationRequest, res: Response) => {
 
     }
 }
