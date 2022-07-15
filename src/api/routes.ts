@@ -9,8 +9,10 @@ export function Routes(app: Application) {
         .post(controller.reserve)
         .delete(controller.cancel);
 
-    app.route('/item/:itemId')
-        .get(controller.showAllReservations)
+    app.route('/items')
+        .get(controller.showAllReservations);
+
+    app.route('/items/:id')
         .post(controller.addItem)
         .put(controller.updateItem)
         .delete(controller.removeItem);

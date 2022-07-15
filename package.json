@@ -4,7 +4,8 @@
   "description": "Receives requests for kitchenware reservations",
   "main": "index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start:dev": "ts-node src/index.ts",
+    "build": ""
   },
   "author": "Daniel Eager",
   "license": "MIT",

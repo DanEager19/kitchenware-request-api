@@ -1,37 +1,37 @@
 export interface Item {
-    id: Number,
-    name: String,
-    isReserved: Boolean,
-    holderId: String
+    id: number,
+    name: string,
+    inventory: number,
+    holderId: number
 }
 
 export interface ItemRequest extends Express.Request{
     body: {
-        id: Number,
-        name: String,
-        isReserved: Boolean,
-        holderId: String
+        id: number,
+        name: string,
+        inventory: number,
+        holderId: number
     }
 }
 
 export interface Reservation {
-    id: Number,
-    item: String, 
+    id: number,
+    item: string, 
     //Email Address
-    reservee: String,
+    reservee: string,
     startDate: Date,
     endDate: Date,
-    returned: Boolean
+    returned: boolean
 }
 
 export interface ReservationRequest extends Express.Request {
     body: {
-        id: Number,
-        item: String, 
-        reservee: String,
+        id: number,
+        item: string, 
+        reservee: string,
         startDate: Date,
         endDate: Date,
-        returned: Boolean
+        returned: boolean
     }
 }
 
@@ -50,7 +50,7 @@ export const createItemTable = `
     CREATE TABLE IF NOT EXISTS items(
         ID int NOT NULL PRIMARY KEY AUTO_INCREMENT,
         name char,
-        isReserved boolean,
+        inventory int,
         holderID int
     );
 `
