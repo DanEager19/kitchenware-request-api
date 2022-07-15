@@ -1,14 +1,19 @@
 export interface Item {
     id: number,
     name: string,
+    description: string,
     inventory: number,
     holderId: number
 }
 
 export interface ItemRequest extends Express.Request{
+    params: {
+        id: number
+    },
     body: {
         id: number,
         name: string,
+        description: string,
         inventory: number,
         holderId: number
     }
@@ -50,6 +55,7 @@ export const createItemTable = `
     CREATE TABLE IF NOT EXISTS items(
         ID SERIAL PRIMARY KEY,
         name TEXT,
+        description TEXT,
         inventory INT,
         holderID INT
     );

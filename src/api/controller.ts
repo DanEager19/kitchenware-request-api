@@ -29,7 +29,7 @@ export class Controller {
             }
         });
     }
-/*
+
     reserve = async (req: ReservationRequest, res: Response) => {
         const data = req.body;
         const item: Item = await this.client.query('SELECT * FROM items WHERE name=$1', data.item);
@@ -65,29 +65,32 @@ export class Controller {
     showAllReservations = async (req: ReservationRequest, res: Response) =>{
 
     }
-    */
+    
     listAllItems = async (req: ItemRequest, res: Response) => {
-        const {items} = await this.client.query('SELECT * FROM items ORDER BY id ASC', 
-            (e: Error) => {
+        await this.client.query('SELECT * FROM items ORDER BY ID ASC;', 
+            (e: Error, result: any) => {
                 if (e) {
                     res.send(e);
                     console.log(`[ERROR] - ${e}`);
+                    return;
+                } else {
+                    res.send(result.rows);
+                    console.log('[GET] - Sent all items.');
                 }
             }
         );
-        res.json(items);
-        console.log(items)
-        console.log('[GET] - Sent all items.');
+        
     }
 
     addItem = async (req: ItemRequest, res: Response) => {
         const data = req.body;
         await this.client.query(`INSERT INTO items(
                 name,
+                description,
                 inventory,
                 holderID
-            ) VALUES ($1, $2, $3);`, 
-            [data.name, data.inventory,0], (e: Error) => {
+            ) VALUES ($1, $2, $3, $4);`, 
+            [data.name, data.description, data.inventory, 0], (e: Error, result: any) => {
                 if (e) {
                     res.send(e);
                     console.log(`[ERROR] - ${e}`);
@@ -101,12 +104,12 @@ export class Controller {
 
     updateItem = async (req: ItemRequest, res: Response) => {
         const data = req.body;
-        await this.client.query(`UPDATE items SET name=$1, inventory=$2 WHERE ID=$3`, 
-            [data.name, data.inventory, data.id],
-            (e: Error) => {
+        await this.client.query(`UPDATE items SET name=$1, description=$2, inventory=$3 WHERE ID=$4;`, 
+            [data.name, data.description, data.inventory, req.params.id],
+            (e: Error, result: any) => {
                 if(e) {
                     res.send(e);
-                    console.log(`[ERROR] - ${e}`);
+                    console.log(`[ERROR]- ${e}`);
                 } else {
                     res.send(`Successfully updated ${data.name} in items.`);
                     console.log(`[PUT] - Updated ${data.name} in items.`);
@@ -116,16 +119,15 @@ export class Controller {
     }
 
     removeItem = async (req: ItemRequest, res: Response) => {
-        const data = req.body;
-        await this.client.query(`DELETE FROM items where ID=$1`,
-            [data.id], 
-            (e: Error) => {
+        await this.client.query(`DELETE FROM items WHERE ID=$1;`,
+            [req.params.id], 
+            (e: Error, result: any) => {
                 if (e) {
                     res.send(e);
                     console.log(`[ERROR] - ${e}`);
                 } else {
-                    res.send(`Successfully deleted ${data.name} from items.`);
-                    console.log(`[DELETE] - Deleted ${data.name} from items.`);
+                    res.send(`Successfully deleted item with ID ${req.params.id} from items.`);
+                    console.log(`[DELETE] - Deleted item with ID ${req.params.id} from items.`);
                 }
             }
         );
