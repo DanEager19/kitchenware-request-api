@@ -19,8 +19,8 @@ export interface ItemRequest extends Express.Request{
 
 export interface Reservation {
     id: number,
-    item: string, 
-    //Email Address
+    itemName: string,
+    itemId: number, 
     email: string,
     startDate: Date,
     endDate: Date,
@@ -30,7 +30,8 @@ export interface Reservation {
 export interface ReservationRequest extends Express.Request {
     body: {
         id: number,
-        item: string, 
+        itemName: string,
+        itemId: number, 
         email: string,
         startDate?: Date,
         endDate?: Date,
@@ -41,7 +42,8 @@ export interface ReservationRequest extends Express.Request {
 export const createReservationTable = `
     CREATE TABLE IF NOT EXISTS reservations(
         ID SERIAL PRIMARY KEY,
-        item TEXT,
+        itemName TEXT,
+        itemId INT,
         email TEXT,
         startDate DATE,
         endDate DATE,

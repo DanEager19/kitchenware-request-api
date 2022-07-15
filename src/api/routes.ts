@@ -5,10 +5,12 @@ export const Routes = (app: Application) => {
     const controller = new Controller;
 
     app.route('/reserve')
-  //      .get(controller.showAllReservations)
+        .get(controller.showAllReservations)
         .post(controller.reserve)
-    //    .delete(controller.cancel);
 
+    app.route('/return')
+        .post(controller.return);
+    
     app.route('/items')
         .get(controller.listAllItems)
         .post(controller.addItem)
