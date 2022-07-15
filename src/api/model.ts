@@ -3,7 +3,6 @@ export interface Item {
     name: string,
     description: string,
     inventory: number,
-    holderId: number
 }
 
 export interface ItemRequest extends Express.Request{
@@ -15,7 +14,6 @@ export interface ItemRequest extends Express.Request{
         name: string,
         description: string,
         inventory: number,
-        holderId: number
     }
 }
 
@@ -23,7 +21,7 @@ export interface Reservation {
     id: number,
     item: string, 
     //Email Address
-    reservee: string,
+    email: string,
     startDate: Date,
     endDate: Date,
     returned: boolean
@@ -33,9 +31,9 @@ export interface ReservationRequest extends Express.Request {
     body: {
         id: number,
         item: string, 
-        reservee: string,
-        startDate: Date,
-        endDate: Date,
+        email: string,
+        startDate?: Date,
+        endDate?: Date,
         returned: boolean
     }
 }
@@ -44,7 +42,7 @@ export const createReservationTable = `
     CREATE TABLE IF NOT EXISTS reservations(
         ID SERIAL PRIMARY KEY,
         item TEXT,
-        reservee TEXT,
+        email TEXT,
         startDate DATE,
         endDate DATE,
         returned BOOLEAN
@@ -56,7 +54,6 @@ export const createItemTable = `
         ID SERIAL PRIMARY KEY,
         name TEXT,
         description TEXT,
-        inventory INT,
-        holderID INT
+        inventory INT
     );
 `
