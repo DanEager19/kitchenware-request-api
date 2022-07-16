@@ -1,6 +1,8 @@
 import { Item, ReservationRequest, createReservationTable, createItemTable, ItemRequest } from './model';
 import { Response } from 'express';
 import { Client } from 'pg';
+import { email, password } from '../auth.json';
+let nodemailer = require('nodemailer');
 
 export class Controller {
     private client = new Client({
@@ -10,7 +12,7 @@ export class Controller {
         password: 'Password1!',
         port: 5432,
     });
-
+    
     public constructor() { 
         this.client.connect();
 
@@ -23,7 +25,7 @@ export class Controller {
             }
         });
 
-        this.client.query(createItemTable,(e: Error, result: any) =>{
+        this.client.query(createItemTable,(e: Error, result: any) => {
             if (e) {
                 console.log(`[x] - ${e}`);
                 return;
@@ -41,6 +43,33 @@ export class Controller {
             }
         }, time);
         return;
+    }
+
+    private sendEmail = async (userEmail: string, title: string, msg: string ): Promise<void> => {
+        const transporter = nodemailer.createTransort({
+            service: 'gmail',
+            auth: {
+                user: email,
+                pass: password,
+            }
+        });
+    
+        const mailOptions = {
+            from: email,
+            to: userEmail,
+            subject: title,
+            text: msg
+        }
+    
+        await transporter.sendMail(mailOptions, (e: Error, info: any) => {
+            if (e) {
+                console.log(`[x] - ${e}`);
+                return;
+            } else {
+                console.log('[~] - Reminder email sent.');
+                return;
+            }
+        });
     }
 
     public showAllReservations = async (req: ReservationRequest, res: Response): Promise<void> => {
@@ -127,7 +156,7 @@ export class Controller {
                         }
                     }
                 );
-                
+
                 this.returnTimer(timerValue);
             }
         }
