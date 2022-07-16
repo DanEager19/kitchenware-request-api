@@ -22,8 +22,6 @@ export interface Reservation {
     itemName: string,
     itemId: number, 
     email: string,
-    startDate: Date,
-    endDate: Date,
     returned: boolean
 }
 
@@ -33,8 +31,6 @@ export interface ReservationRequest extends Express.Request {
         itemName: string,
         itemId: number, 
         email: string,
-        startDate?: Date,
-        endDate?: Date,
         returned: boolean
     }
 }
