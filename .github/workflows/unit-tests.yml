@@ -28,9 +28,10 @@ jobs:
       - name: Install Dependencies
         run: yarn install
       - name: Unit testing
-        run: yarn test
         env:
           POSTGRES_HOST: localhost
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
           POSTGRES_DATABASE: test
+        run: yarn test
+       

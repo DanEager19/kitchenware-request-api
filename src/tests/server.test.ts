@@ -1,9 +1,9 @@
-const request = require('supertest');
-import { Request, Response, Application } from 'express';
-import express = require('express');
+import { Application } from 'express';
 import { Client } from 'pg';
 import { Routes } from '../api/routes';
+const express = require('express');
 const dotenv = require('dotenv');
+const request = require('supertest');
 dotenv.config();
 
 const app: Application = express();
@@ -16,13 +16,14 @@ app.use(
     })
 );
 
-const client =  new Client({
-    host: process.env.POSTGRES_HOST,
+const client = new Client({
     user: process.env.POSTGRES_USER,
+    host: process.env.POSTGRES_HOST,
     database: process.env.POSTGRES_DATABASE,
     password: process.env.POSTGRES_PASSWORD,
     port: 5432
 })
+
 client.connect()
 
 Routes(client, app);
