@@ -111,14 +111,14 @@ export class Controller {
         const item: Item = result.rows[0];
 
         if (item === undefined) {
-            res.status(404).send(`{data.itemName} Not Found.`);
+            res.status(404).send(`Item with ID ${data.itemId} Not Found.`);
             console.log(`[x] - ${data.email} requested item that does not exist.`);
             return;
         }
 
         if (item.inventory === 0) {
-            res.status(403).send(`Cannot Reserve. Inventory of ${data.itemName} is currently 0.`);
-            console.log(`[x] - ${data.email} tried to reserve ${data.itemName} whose inventory is currently 0.`);
+            res.status(403).send(`Cannot Reserve. Inventory of ${item.name} is currently 0.`);
+            console.log(`[x] - ${data.email} tried to reserve ${item.name} whose inventory is currently 0.`);
             return;
         } else {
             const startDate: Date = new Date(), endDate: Date = new Date();
@@ -129,10 +129,10 @@ export class Controller {
 
             if(startDate.getDay() === 0 || startDate.getDay() === 6) {
                 res.status(403).send("Items cannot be picked up on weekends.");
-                console.log(`[x] - ${data.email} tried to pick up ${data.itemName} on the weekend.`);
+                console.log(`[x] - ${data.email} tried to pick up ${item.name} on the weekend.`);
                 return;
             } else {
-                console.log(`[~] - ${data.email} has ${data.itemName} from ${startDate.toDateString()} until ${endDate.toDateString()}.`);
+                console.log(`[~] - ${data.email} has ${item.name} from ${startDate.toDateString()} until ${endDate.toDateString()}.`);
                 
                 await this.client.query('UPDATE items SET inventory=inventory - 1 WHERE ID=$1;', 
                     [item.id],
@@ -155,7 +155,7 @@ export class Controller {
                         returned
                     ) VALUES($1, $2, $3, $4, $5, $6);`, [
                         data.itemId,
-                        data.itemName,
+                        item.name,
                         data.email,
                         startDate,
                         endDate,
