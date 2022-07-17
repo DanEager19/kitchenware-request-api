@@ -36,7 +36,7 @@ export interface ReservationRequest extends Express.Request {
 }
 
 export const createReservationTable = `
-    CREATE TABLE IF NOT EXISTS reservations(
+    CREATE TEMP TABLE IF NOT EXISTS reservations(
         ID SERIAL PRIMARY KEY,
         itemName TEXT,
         itemId INT,
@@ -48,7 +48,7 @@ export const createReservationTable = `
 `
 
 export const createItemTable = `
-    CREATE TABLE IF NOT EXISTS items(
+    CREATE TEMP TABLE IF NOT EXISTS items(
         ID SERIAL PRIMARY KEY,
         name TEXT,
         description TEXT,

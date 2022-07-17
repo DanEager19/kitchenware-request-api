@@ -1,24 +1,5 @@
-import { Request, Response, Application } from 'express';
-import express = require('express');
-import { Routes } from '../api/routes';
 const request = require('supertest');
-const app: Application = express();
-
-app.use(express.json());
-
-app.use(
-    express.urlencoded({
-        extended:true, 
-    })
-);
-const dbInfo = {   
-    user: 'user',
-    host: 'localhost',
-    database: 'api',
-    password: 'Password1!',
-    port: 5432
-}
-Routes(dbInfo, app);
+import app from '../api/server'
 
 describe('POST /items', () => {
     it('Should return status code 201 with a confirmation message.', async () => {
@@ -63,14 +44,23 @@ describe('GET /reserve', () => {
 });
 
 describe('POST /reserve', () => {
-    it('Should return status code 201 with a success message', async () => {
+    it('Should return status code 201 with a success message or 403 on weekends.', async () => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+
         const res = await request(app)
             .post('/reserve')
             .send({
                 itemName: 'pan',
                 itemId: 1,
                 email: 'foo@bar.com',
-            })
+            });
+
+        if(d.getDay() === 0 || d.getDay() === 6) {
+            expect(res.statusCode).toEqual(403);
+        } else {
+            expect(res.statusCode).toEqual(201)
+        }
     });
 });
 

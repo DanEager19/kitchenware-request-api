@@ -5,16 +5,14 @@ import { email, password } from '../auth.json';
 let nodemailer = require('nodemailer');
 
 export class Controller {
-    private client 
-    public constructor(dbinfo: any) {
-        this.client = new Client({
-            user: dbinfo.user,
-            host: dbinfo.host,
-            database: dbinfo.database,
-            password: dbinfo.password,
-            port: dbinfo.port
-        })
-
+    private client = new Client({
+        user: 'user',
+        host: 'localhost',
+        database: 'api',
+        password: 'Password1!',
+        port: 5432
+    })
+    public constructor() {
         this.client.connect();
         this.client.query(createReservationTable, (e: Error, result: any) => {
             if (e) {
