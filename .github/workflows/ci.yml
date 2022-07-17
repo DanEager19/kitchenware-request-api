@@ -1,4 +1,4 @@
-name: CI Unit testing
+name: Run Jest unit testing
 on:
   push:
     branches: [main]
@@ -22,7 +22,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install test container
       - name: Install Dependencies
         run: yarn install
       - name: Unit testing
