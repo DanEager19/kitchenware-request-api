@@ -1,5 +1,5 @@
 const request = require('supertest');
-import app from '../api/app';
+import app from '../src/api/app';
 
 describe('Testing all routes.', () => {
     it('POST /items - Should return status code 201 with a confirmation message of item creation.', async () => {
