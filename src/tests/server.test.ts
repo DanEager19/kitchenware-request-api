@@ -28,8 +28,20 @@ client.connect()
 
 Routes(client, app);
 
-describe('POST /items', () => {
-    it('Should return status code 201 with a confirmation message of item creation.', async () => {
+describe('Testing all routes.', () => {
+    let server: any;
+
+    beforeEach(() => {
+        server = app.listen(3000, () => {
+            console.log('Listening on port 3000')
+        });
+    });
+
+    afterEach(async () => {
+        await server.close();
+    });
+
+    it('POST /items - Should return status code 201 with a confirmation message of item creation.', async () => {
         const res = await request(app)
             .post('/items')
             .send({
@@ -39,30 +51,24 @@ describe('POST /items', () => {
             });
         expect(res.statusCode).toEqual(201);
     });
-});
 
-describe('GET /items', () => {
-    it('Should return status code 200 with list of items.', async () => {
+    it('GET /items - Should return status code 200 with list of items.', async () => {
         const res = await request(app)
             .get('/items')
             .send();
         expect(res.statusCode).toEqual(200);
         expect(res.body).toBeDefined();
     });
-});
 
-describe('GET /reserve', () => {
-    it('Should return status code 200 with list of reservations.', async () => {
+    it('GET /reserve - Should return status code 200 with list of reservations.', async () => {
         const res = await request(app)
             .get('/reserve')
             .send();
         expect(res.statusCode).toEqual(200);
         expect(res.body).toBeDefined();
-    })
-});
+    });
 
-describe('POST /reserve', () => {
-    it('Should return status code 201 with a success message or 403 on weekends.', async () => {
+    it('POST /reserve - Should return status code 201 with a success message or 403 on weekends.', async () => {
         const d = new Date();
         d.setDate(d.getDate() + 1);
 
@@ -80,10 +86,8 @@ describe('POST /reserve', () => {
             expect(res.statusCode).toEqual(201)
         }
     });
-});
 
-describe('POST /return', () => {
-    it('Should return status code 200 with a success message regarding a successful return.', async () => {
+    it('POST /return - Should return status code 200 with a success message regarding a successful return.', async () => {
         const res = await request(app)
             .post('/return')
             .send({
@@ -92,10 +96,8 @@ describe('POST /return', () => {
             });
         expect(res.statusCode).toEqual(200);
     });
-});
 
-describe('PUT /items', () => {
-    it('Should return status code 200 with a confirmation message of updated item.', async () => {
+    it('PUT /items - Should return status code 200 with a confirmation message of updated item.', async () => {
         const res = await request(app)
             .put('/items')
             .send({
@@ -106,10 +108,8 @@ describe('PUT /items', () => {
             });
         expect(res.statusCode).toEqual(200);
     });
-});
-
-describe('DELETE /items', () => {
-    it('Should return status code 200 with a confirmation message of deleted item.', async () => {
+    
+    it('DELETE /items - Should return status code 200 with a confirmation message of deleted item.', async () => {
         const res = await request(app)
             .delete('/items')
             .send({
@@ -119,7 +119,6 @@ describe('DELETE /items', () => {
     });
 });
 
-afterAll(done => {
+afterAll(async () => {
     client.end()
-    done()
 })
