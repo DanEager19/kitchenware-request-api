@@ -1,8 +1,9 @@
 import { Application } from "express";
+import { Client } from "pg";
 import { Controller } from './controller'; 
 
-export const Routes = ( app: Application) => {
-    const controller = new Controller();
+export const Routes = (client: Client, app: Application) => {
+    const controller = new Controller(client);
 
     app.route('/reserve')
         .get(controller.showAllReservations)

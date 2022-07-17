@@ -1,0 +1,33 @@
+name: Run Jest unit testing
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: Password1!
+          POSTGRES_DB: api
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: yarn install
+      - name: Unit testing
+        run: yarn test
+        env:
+          DATABASE_URL: localhost

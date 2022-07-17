@@ -1,20 +1,25 @@
-import { Item, ReservationRequest, createReservationTable, createItemTable, ItemRequest } from './model';
-import { Request, Response } from 'express';
+import { Item, ReservationRequest, ItemRequest } from './model';
+import { Response } from 'express';
 import { Client } from 'pg';
 import { email, password } from '../auth.json';
 let nodemailer = require('nodemailer');
 
 export class Controller {
-    private client = new Client({
-        user: 'user',
-        host: 'localhost',
-        database: 'api',
-        password: 'Password1!',
-        port: 5432
-    })
-    public constructor() {
-        this.client.connect();
-        this.client.query(createReservationTable, (e: Error, result: any) => {
+    private client: Client;
+
+    public constructor(client: Client) {
+        this.client = client;
+        this.client.query(`
+            CREATE TEMP TABLE IF NOT EXISTS reservations(
+                ID SERIAL PRIMARY KEY,
+                itemName TEXT,
+                itemId INT,
+                email TEXT,
+                startDate DATE,
+                endDate DATE,
+                returned BOOLEAN
+            );`, 
+        (e: Error, result: any) => {
             if (e) {
                 console.log(`[x] - ${e}`);
                 return;
@@ -23,14 +28,22 @@ export class Controller {
             }
         });
 
-        this.client.query(createItemTable,(e: Error, result: any) => {
-            if (e) {
-                console.log(`[x] - ${e}`);
-                return;
-            } else {
-                console.log('[+] - Created Items Table.');
+        this.client.query(`
+            CREATE TEMP TABLE IF NOT EXISTS items(
+                ID SERIAL PRIMARY KEY,
+                name TEXT,
+                description TEXT,
+                inventory INT
+            );`,
+            (e: Error, result: any) => {
+                if (e) {
+                    console.log(`[x] - ${e}`);
+                    return;
+                } else {
+                    console.log('[+] - Created Items Table.');
+                }
             }
-        });
+        );
     }
 
     private returnTimer = async (time: number): Promise<void> => {
@@ -74,7 +87,7 @@ export class Controller {
         await this.client.query('SELECT * FROM reservations ORDER BY ID ASC;', 
             (e: Error, result: any) => {
                 if (e) {
-                    res.status(400).send(e);
+                    res.status(500).send(e);
                     console.log(`[x] - ${e}`);
                     return;
                 } else {
@@ -119,7 +132,7 @@ export class Controller {
                     [item.id],
                     (e: Error, result: any) => {
                         if(e) {
-                            res.status(400).send(e);
+                            res.status(500).send(e);
                             console.log(`[x] - ${e}`);
                             return;
                         } else {
@@ -144,7 +157,7 @@ export class Controller {
                     ], 
                     (e: Error, result: any) => {
                         if(e) {
-                            res.status(400).send(e);
+                            res.status(500).send(e);
                             console.log(`[x] - ${e}`);
                             return;
                         } else {
@@ -166,7 +179,7 @@ export class Controller {
             [true, data.id],
             (e: Error, result: any) => {
                 if (e) {
-                    res.status(400).send(e);
+                    res.status(500).send(e);
                     console.log(`[x] - ${e}`);
                     return;
                 } else {
@@ -176,11 +189,10 @@ export class Controller {
                 }
             }
         );
-        await this.client.query('UPDATE items SET inventory=inventory + 1 WHERE name=$1;', 
+        await this.client.query('UPDATE items SET inventory=inventory + 1 WHERE ID=$1;', 
             [data.itemId],
             (e: Error, result: any) => {
                 if (e) {
-                    res.status(400).send(e);
                     console.log(`[x] - ${e}`);
                     return;
                 } else {
@@ -195,8 +207,8 @@ export class Controller {
         await this.client.query('SELECT * FROM items ORDER BY ID ASC;', 
             (e: Error, result: any) => {
                 if (e) {
-                    res.status(400).send(e);
-                    console.log(`[x] -  ${e}`);
+                    res.status(500).send(e);
+                    console.log(`[x] - ${e}`);
                     return;
                 } else {
                     res.status(200).send(result.rows);
@@ -216,7 +228,7 @@ export class Controller {
             ) VALUES ($1, $2, $3);`, 
             [data.name, data.description, data.inventory], (e: Error, result: any) => {
                 if (e) {
-                    res.status(400).send(e);
+                    res.status(500).send(e);
                     console.log(`[x] - ${e}`);
                     return;
                 } else {
@@ -234,7 +246,7 @@ export class Controller {
             [data.name, data.description, data.inventory, data.id],
             (e: Error, result: any) => {
                 if(e) {
-                    res.status(400).send(e);
+                    res.status(500).send(e);
                     console.log(`[x] - ${e}`);
                     return;
                 } else {
@@ -251,7 +263,7 @@ export class Controller {
             [req.body.id], 
             (e: Error, result: any) => {
                 if (e) {
-                    res.status(400).send(e);
+                    res.status(500).send(e);
                     console.log(`[x] - ${e}`);
                     return;
                 } else {
