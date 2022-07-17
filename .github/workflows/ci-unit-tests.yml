@@ -1,4 +1,4 @@
-name: CI/CD with Unit testing
+name: CI Unit testing
 on:
   push:
     branches: [main]
@@ -8,7 +8,7 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     services:
-      postgres-testing:
+      postgres:
         image: postgres:14-alpine
         env:
           POSTGRES_USER: user
@@ -22,6 +22,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Install test container
       - name: Install Dependencies
         run: yarn install
       - name: Unit testing
@@ -31,7 +32,3 @@ jobs:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
           POSTGRES_DATABASE: test
-      - name: Stop all testing containers
-        run: docker container prune -f && docker stop $(docker ps -aq) && docker rm -vf $(docker ps -a -q) && docker rmi -f $(docker images -a -q)
-      - name: Build docker-compose containers 
-        run: docker-compose up -d --build
