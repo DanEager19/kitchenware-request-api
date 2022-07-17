@@ -1,21 +1,21 @@
 import { Item, ReservationRequest, createReservationTable, createItemTable, ItemRequest } from './model';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Client } from 'pg';
 import { email, password } from '../auth.json';
 let nodemailer = require('nodemailer');
 
 export class Controller {
-    private client = new Client({
-        user: 'user',
-        host: 'localhost',
-        database: 'api',
-        password: 'Password1!',
-        port: 5432,
-    });
-    
-    public constructor() { 
-        this.client.connect();
+    private client 
+    public constructor(dbinfo: any) {
+        this.client = new Client({
+            user: dbinfo.user,
+            host: dbinfo.host,
+            database: dbinfo.database,
+            password: dbinfo.password,
+            port: dbinfo.port
+        })
 
+        this.client.connect();
         this.client.query(createReservationTable, (e: Error, result: any) => {
             if (e) {
                 console.log(`[x] - ${e}`);
@@ -85,7 +85,7 @@ export class Controller {
                     return;
                 }
             }
-        );   
+        );
     }
 
     public reserve = async (req: ReservationRequest, res: Response): Promise<void> => {

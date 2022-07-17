@@ -1,8 +1,8 @@
 import { Application } from "express";
 import { Controller } from './controller'; 
 
-export const Routes = (app: Application) => {
-    const controller = new Controller;
+export const Routes = (dbInfo:any, app: Application) => {
+    const controller = new Controller(dbInfo);
 
     app.route('/reserve')
         .get(controller.showAllReservations)

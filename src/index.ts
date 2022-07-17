@@ -12,10 +12,17 @@ app.use(
     })
 );
 
-Routes(app);
+const dbInfo = {   
+    user: 'user',
+    host: 'localhost',
+    database: 'api',
+    password: 'Password1!',
+    port: 5432
+}
+
+Routes(dbInfo, app);
 
 const port: Number = 3000;
 app.listen(port, () => {
     console.log(`Express server started on port ${port}`);
 });
-export default app;

@@ -40,4 +40,5 @@ if(Today === End Date + 1 && Reservation.Returned === True)
     item.Holder = 0;
 else if (Today === End Date + 1 && Reservation.Returned === False)
     sendEmail("Please return your kitchenware.", email)
- 
+
+email intergration -> unit testing -> dockerization -> CI/CD -> deployment

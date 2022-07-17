@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  express-server:
+    container_name: express-server
+    build: 
+      context: ./src
+    depends_on:
+      - pg
+    restart: always
+    networks:
+      vcbr:
+        ipv4_address: 10.0.0.2
+  pg:
+    container_name: pg
+    image: pg
