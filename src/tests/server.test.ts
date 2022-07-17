@@ -28,10 +28,6 @@ client.connect()
 
 Routes(client, app);
 
-beforeAll(done => {
-    done()
-});
-
 describe('POST /items', () => {
     it('Should return status code 201 with a confirmation message of item creation.', async () => {
         const res = await request(app)
