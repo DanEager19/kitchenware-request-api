@@ -1,7 +1,6 @@
 import { Item, ReservationRequest, ItemRequest } from './model';
 import { Response } from 'express';
 import { Client } from 'pg';
-import { email, password } from '../auth.json';
 let nodemailer = require('nodemailer');
 
 export class Controller {
@@ -60,13 +59,13 @@ export class Controller {
         const transporter = nodemailer.createTransort({
             service: 'gmail',
             auth: {
-                user: email,
-                pass: password,
+                user: 'email',
+                pass: 'password',
             }
         });
     
         const mailOptions = {
-            from: email,
+            from: 'email',
             to: userEmail,
             subject: title,
             text: msg
