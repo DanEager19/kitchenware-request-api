@@ -1,4 +1,4 @@
-import { Request, Response, Application } from 'express';
+import { Application } from 'express';
 import express = require('express');
 import { Client } from 'pg';
 import { Routes } from './api/routes';

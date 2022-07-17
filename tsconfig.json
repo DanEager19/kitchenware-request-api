@@ -105,7 +105,7 @@
   ],
   "include":[ 
     "src/**/*.ts"
-  ],
+, "teardown.global.ts"  ],
   "exclude": [
     "node_modules",
     "dist",

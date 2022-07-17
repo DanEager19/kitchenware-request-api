@@ -41,4 +41,4 @@ if(Today === End Date + 1 && Reservation.Returned === True)
 else if (Today === End Date + 1 && Reservation.Returned === False)
     sendEmail("Please return your kitchenware.", email)
 
-email intergration -> unit testing -> dockerization -> CI/CD -> deployment
+email intergration -> dockerization -> CI/CD -> deployment
