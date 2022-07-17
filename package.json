@@ -7,7 +7,7 @@
     "start:dev": "ts-node src/index.ts",
     "start:prod": "tsc node dist/index.js",
     "build": "tsc --build",
-    "test": "jest"
+    "test": "jest --detectOpenHandles"
   },
   "author": "Daniel Eager",
   "license": "MIT",
