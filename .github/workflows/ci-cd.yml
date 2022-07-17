@@ -8,7 +8,7 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     services:
-      postgres:
+      postgres-testing:
         image: postgres:14-alpine
         env:
           POSTGRES_USER: user
@@ -31,5 +31,7 @@ jobs:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
           POSTGRES_DATABASE: test
-      - name: Build the docker-compose stack
+      - name: Stop all testing containers
+        run: docker container prune -f && docker stop $(docker ps -aq) && docker rm -vf $(docker ps -a -q) && docker rmi -f $(docker images -a -q)
+      - name: Build docker-compose containers 
         run: docker-compose up -d --build
