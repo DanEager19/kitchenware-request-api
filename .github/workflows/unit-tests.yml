@@ -31,6 +31,6 @@ jobs:
         run: yarn test
         env:
           PGUSER: user
-          PGHOST: localhost
+          PGHOST: postgres
           PGPASSWORD: password
           PGDATABASE: test
