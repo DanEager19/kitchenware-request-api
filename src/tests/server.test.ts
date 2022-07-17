@@ -1,32 +1,5 @@
-import { Application } from 'express';
-import { Client } from 'pg';
-import { Routes } from '../api/routes';
-const express = require('express');
-const dotenv = require('dotenv');
 const request = require('supertest');
-dotenv.config();
-
-const app: Application = express();
-
-app.use(express.json());
-
-app.use(
-    express.urlencoded({
-        extended:true, 
-    })
-);
-
-const client = new Client({
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DATABASE,
-    password: process.env.POSTGRES_PASSWORD,
-    port: 5432
-})
-
-client.connect()
-
-Routes(client, app);
+import app from '../api/app';
 
 describe('Testing all routes.', () => {
     it('POST /items - Should return status code 201 with a confirmation message of item creation.', async () => {
@@ -107,6 +80,3 @@ describe('Testing all routes.', () => {
     });
 });
 
-afterAll(async () => {
-    client.end()
-})

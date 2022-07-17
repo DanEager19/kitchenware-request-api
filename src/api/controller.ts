@@ -2,12 +2,19 @@ import { Item, ReservationRequest, ItemRequest } from './model';
 import { Response } from 'express';
 import { Client } from 'pg';
 let nodemailer = require('nodemailer');
-
+const dotenv = require('dotenv');
+dotenv.config();
 export class Controller {
-    private client: Client;
-
-    public constructor(client: Client) {
-        this.client = client;
+    private client: Client = new Client({
+        user: process.env.POSTGRES_USER,
+        host: process.env.POSTGRES_HOST,
+        database: process.env.POSTGRES_DATABASE,
+        password: process.env.POSTGRES_PASSWORD,
+        port: 5432
+    })
+    
+    public constructor() {
+        this.client.connect()
         this.client.query(`
             CREATE TEMP TABLE IF NOT EXISTS reservations(
                 ID SERIAL PRIMARY KEY,
