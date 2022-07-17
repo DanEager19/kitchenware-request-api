@@ -3,7 +3,6 @@ import express = require('express');
 import { Client } from 'pg';
 import { Routes } from './api/routes';
 const dotenv = require('dotenv');
-
 dotenv.config();
 
 const app: Application = express();

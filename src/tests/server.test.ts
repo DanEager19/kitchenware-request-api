@@ -3,6 +3,8 @@ import { Request, Response, Application } from 'express';
 import express = require('express');
 import { Client } from 'pg';
 import { Routes } from '../api/routes';
+const dotenv = require('dotenv');
+dotenv.config();
 
 const app: Application = express();
 
@@ -15,10 +17,10 @@ app.use(
 );
 
 const client =  new Client({
-    user: 'user',
-    host: 'localhost',
-    database: 'api',
-    password: 'Password1!',
+    host: process.env.POSTGRES_HOST,
+    user: process.env.POSTGRES_USER,
+    database: process.env.POSTGRES_DATABASE,
+    password: process.env.POSTGRES_PASSWORD,
     port: 5432
 })
 client.connect()
