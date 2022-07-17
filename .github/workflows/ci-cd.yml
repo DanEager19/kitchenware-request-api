@@ -1,4 +1,4 @@
-name: Run Jest unit testing
+name: CI/CD with Unit testing
 on:
   push:
     branches: [main]
@@ -31,3 +31,5 @@ jobs:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
           POSTGRES_DATABASE: test
+      - name: Build the docker-compose stack
+        run: docker-compose up -d --build
