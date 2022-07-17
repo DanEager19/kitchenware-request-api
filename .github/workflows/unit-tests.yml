@@ -15,8 +15,8 @@ jobs:
         image: postgres:14-alpine
         env:
           POSTGRES_USER: user
-          POSTGRES_PASSWORD: Password1!
-          POSTGRES_DB: api
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
         ports:
           - 5432:5432
     steps:
@@ -30,4 +30,7 @@ jobs:
       - name: Unit testing
         run: yarn test
         env:
-          DATABASE_URL: localhost
+          PGUSER: user
+          PGHOST: localhost
+          PGPASSWORD: password
+          PGDATABASE: test
