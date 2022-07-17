@@ -17,10 +17,10 @@ app.use(
 );
 
 const client =  new Client({
-    user: process.env.PGUSER,
-    host: process.env.PGHOST,
-    database: process.env.PGDATABASE,
-    password: process.env.PASSWORD,
+    host: process.env.POSTGRES_HOST,
+    user: process.env.POSTGRES_USER,
+    database: process.env.POSTGRES_DATABASE,
+    password: process.env.POSTGRES_PASSWORD,
     port: 5432
 });
 client.connect();
