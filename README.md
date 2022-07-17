@@ -1,44 +1,38 @@
-Express Server --> PostgreSQL
+# Kitchenware backend API
+<p>
+    A simple backend service for cataloguing kitchenware items and signing up for reservations. 
+    Utilizes Express, PostgreSQL, and Docker.
+</p>
 
-# Operations
-- Make Reservation
-    - One week max ( 7 days )
-    - No overlap
-    - If overlap, return current renter/duration
-- Cancel Reservation
-- Show All Reservations
-- Add Item
-- List Items
-- Update Item
-- Remove Item
-# Datasets
-- Item
-    - ID: Int
-    - Name: String
-    - IsReserved: Boolean
-    - Holder: Reservation.ID: Int
-- Reservation
-    - ID: Int
-    - Item Name: String
-    - Reservee: Email
-    - Start Date: Date
-    - End Date: Date
-    - Returned: Boolean
-# Control
-if (item.isReserved)
-    return "Cannot reserve, Reservee has Item until End Date";
-else
-    item.isReserved = true;
-    sendEmail("Order details", email)
-    return "Success"
+## Dependencies
+```sh
+This app requires Node.JS version 16 or later. It also uses Yarn and the Docker Engine.
+```
 
-if(Today === End Date)
-    sendEmail("Please return Item by the end of the day", email)
+## Installation
+```sh
+git clone https://github.com/DanEager19/ktichenware-request-api
+cd kitchenware-request-api
+yarn install
+```
 
-if(Today === End Date + 1 && Reservation.Returned === True)
-    item.isReserved = false;
-    item.Holder = 0;
-else if (Today === End Date + 1 && Reservation.Returned === False)
-    sendEmail("Please return your kitchenware.", email)
+## Testing
+```sh
+yarn test
+```
 
-email intergration -> dockerization -> CI/CD -> deployment
+## Usage
+For development environments:
+```sh
+yarn start:dev (Note: An instance of PostgreSQL on localhost is required for non-container environments.)
+```
+For deployment:
+```sh
+docker-compose up -d --build
+```
+## Author
+
+**Daniel Eager**
+
+* Website: https://deager.dev/
+* Github: [@DanEager19](https://github.com/DanEager19)
