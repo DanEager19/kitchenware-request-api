@@ -29,18 +29,6 @@ client.connect()
 Routes(client, app);
 
 describe('Testing all routes.', () => {
-    let server: any;
-
-    beforeEach(() => {
-        server = app.listen(3000, () => {
-            console.log('Listening on port 3000')
-        });
-    });
-
-    afterEach(async () => {
-        await server.close();
-    });
-
     it('POST /items - Should return status code 201 with a confirmation message of item creation.', async () => {
         const res = await request(app)
             .post('/items')
@@ -108,7 +96,7 @@ describe('Testing all routes.', () => {
             });
         expect(res.statusCode).toEqual(200);
     });
-    
+
     it('DELETE /items - Should return status code 200 with a confirmation message of deleted item.', async () => {
         const res = await request(app)
             .delete('/items')
