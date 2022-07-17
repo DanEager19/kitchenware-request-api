@@ -3,7 +3,7 @@ services:
   express-server:
     container_name: express-server
     image: node:alpine
-    command: sh -c "yarn install && yarn test && yarn start:prod"
+    command: sh -c "yarn install && yarn start:prod"
     working_dir: /app
     volumes:
       - ./:/app
