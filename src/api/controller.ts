@@ -90,7 +90,7 @@ export class Controller {
     }
 
     public showAllReservations = async (req: ReservationRequest, res: Response): Promise<void> => {
-        await this.client.query('SELECT * FROM reservations ORDER BY ID ASC;', 
+        await this.client.query('SELECT * FROM reservations WHERE returned=false ORDER BY ID ASC;', 
             (e: Error, result: any) => {
                 if (e) {
                     res.status(500).send(e);
@@ -181,6 +181,7 @@ export class Controller {
 
     public return = async (req: ReservationRequest, res: Response): Promise<void> => { 
         const data = req.body;
+        const item = await this.client.query('SELECT itemId FROM reservations WHERE ID=$1', [data.id]);
         await this.client.query('UPDATE reservations SET returned=$1 WHERE ID=$2;', 
             [true, data.id],
             (e: Error, result: any) => {
@@ -196,7 +197,7 @@ export class Controller {
             }
         );
         await this.client.query('UPDATE items SET inventory=inventory + 1 WHERE ID=$1;', 
-            [data.itemId],
+            [item.rows[0].itemid],
             (e: Error, result: any) => {
                 if (e) {
                     console.log(`[x] - ${e}`);
