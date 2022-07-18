@@ -181,8 +181,12 @@ export class Controller {
 
     public return = async (req: ReservationRequest, res: Response): Promise<void> => { 
         const data = req.body;
-        const item = await this.client.query('SELECT itemId FROM reservations WHERE ID=$1', [data.id]);
-        await this.client.query('UPDATE reservations SET returned=$1 WHERE ID=$2;', 
+        const item = await this.client.query('SELECT itemId, returned FROM reservations WHERE ID=$1', [data.id]);
+        if (item.rows[0].returned === true) {
+            res.status(403).send("Item already returned!");
+            console.log(`[x] - Reservation with ID ${data.id} returned item.`);
+        } else {
+            await this.client.query('UPDATE reservations SET returned=$1 WHERE ID=$2;', 
             [true, data.id],
             (e: Error, result: any) => {
                 if (e) {
@@ -195,19 +199,20 @@ export class Controller {
                     return;
                 }
             }
-        );
-        await this.client.query('UPDATE items SET inventory=inventory + 1 WHERE ID=$1;', 
-            [item.rows[0].itemid],
-            (e: Error, result: any) => {
-                if (e) {
-                    console.log(`[x] - ${e}`);
-                    return;
-                } else {
-                    console.log(`[+] - Reservation item inventory corrected.`);
-                    return;
+            );
+            await this.client.query('UPDATE items SET inventory=inventory + 1 WHERE ID=$1;', 
+                [item.rows[0].itemid],
+                (e: Error, result: any) => {
+                    if (e) {
+                        console.log(`[x] - ${e}`);
+                        return;
+                    } else {
+                        console.log(`[+] - Reservation item inventory corrected.`);
+                        return;
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 
     public listAllItems = async (req: ItemRequest, res: Response): Promise<void> => {
@@ -228,23 +233,34 @@ export class Controller {
 
     public addItem = async (req: ItemRequest, res: Response): Promise<void> => {
         const data = req.body;
-        await this.client.query(`INSERT INTO items(
-                name,
-                description,
-                inventory
-            ) VALUES ($1, $2, $3);`, 
-            [data.name, data.description, data.inventory], (e: Error, result: any) => {
-                if (e) {
-                    res.status(500).send(e);
-                    console.log(`[x] - ${e}`);
-                    return;
-                } else {
-                    res.status(201).send(`Successfully added ${data.name} into items.`);
-                    console.log(`[+] - Added ${data.name} into items.`);
-                    return;       
-                }     
-            }
-        );
+        if (data.name === null) {
+            res.status(403).send(`Item name cannot be null.`);
+            console.log(`[x] - Someone tried to register an item without a name.`);
+        } else if (data.description === null) {
+            res.status(403).send(`Item description cannot be null.`);
+            console.log(`[x] - Someone tried to register an item without a description.`);
+        } else if (data.inventory === null) {
+            res.status(403).send(`Item inventory cannot be null.`);
+            console.log(`[x] - Someone tried to register an item without a inventory.`);
+        } else {
+            await this.client.query(`INSERT INTO items(
+                    name,
+                    description,
+                    inventory
+                ) VALUES ($1, $2, $3);`, 
+                [data.name, data.description, data.inventory], (e: Error, result: any) => {
+                    if (e) {
+                        res.status(500).send(e);
+                        console.log(`[x] - ${e}`);
+                        return;
+                    } else {
+                        res.status(201).send(`Successfully added ${data.name} into items.`);
+                        console.log(`[+] - Added ${data.name} into items.`);
+                        return;       
+                    }     
+                }
+            );
+        }
     }
 
     public updateItem = async (req: ItemRequest, res: Response): Promise<void> => {
