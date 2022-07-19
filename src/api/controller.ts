@@ -1,8 +1,8 @@
 import { Item, ReservationRequest, ItemRequest } from './model';
 import { Response } from 'express';
 import { Client } from 'pg';
-let nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 dotenv.config();
 export class Controller {
     private client: Client = new Client({
@@ -61,7 +61,7 @@ export class Controller {
         }, time);
         return;
     }
-
+/*
     private sendEmail = async (userEmail: string, title: string, msg: string ): Promise<void> => {
         const transporter = nodemailer.createTransort({
             service: 'gmail',
@@ -88,7 +88,7 @@ export class Controller {
             }
         });
     }
-
+*/
     public showAllReservations = async (req: ReservationRequest, res: Response): Promise<void> => {
         await this.client.query('SELECT * FROM reservations WHERE returned=false ORDER BY ID ASC;', 
             (e: Error, result: any) => {

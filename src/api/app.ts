@@ -1,6 +1,6 @@
 import { Application } from 'express';
 import { Routes } from '../api/routes';
-const express = require('express');
+import express from 'express';
 
 const app: Application = express();
 

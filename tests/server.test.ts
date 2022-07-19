@@ -1,4 +1,5 @@
-const request = require('supertest');
+
+import request from 'supertest';
 import app from '../src/api/app';
 
 describe('Testing all routes.', () => {
