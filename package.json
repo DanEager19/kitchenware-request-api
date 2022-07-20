@@ -9,7 +9,6 @@
     "build": "tsc --build",
     "test": "jest"
   },
-  "type": "module",
   "author": "Daniel Eager",
   "license": "MIT",
   "devDependencies": {

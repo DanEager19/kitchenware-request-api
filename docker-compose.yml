@@ -2,11 +2,9 @@ version: '3.8'
 services:
   express-server:
     container_name: express-server
-    image: node:alpine
-    command: sh -c "yarn install && yarn start:prod"
-    working_dir: /app
-    volumes:
-      - ./:/app
+    build:
+      context: ./
+      dockerfile: Dockerfile
     environment:
       - POSTGRES_USER=user
       - POSTGRES_HOST=10.0.0.3
@@ -15,7 +13,7 @@ services:
     depends_on:
       - pg
     ports:
-      - '3000:3000'
+      - '0.0.0.0:3000:3000'
     restart: always
     networks:
       vpcbr:
