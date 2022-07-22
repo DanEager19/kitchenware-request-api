@@ -1,5 +1,5 @@
 import { Item, ReservationRequest, ItemRequest } from './model';
-import { Response } from 'express';
+import e, { Response } from 'express';
 import { Client } from 'pg';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
@@ -31,6 +31,7 @@ export class Controller {
                 return;
             } else {
                 console.log('[+] - Created Reservations Table.');
+                return;
             }
         });
 
@@ -47,9 +48,11 @@ export class Controller {
                     return;
                 } else {
                     console.log('[+] - Created Items Table.');
+                    return;
                 }
             }
         );
+        return;
     }
 
     private returnTimer = async (time: number): Promise<void> => {
@@ -103,88 +106,95 @@ export class Controller {
                 }
             }
         );
+        return;
     }
 
     public reserve = async (req: ReservationRequest, res: Response): Promise<void> => {
         const data = req.body;
-        const result = await this.client.query('SELECT * FROM items WHERE ID=$1', [data.itemId]);
-        const item: Item = result.rows[0];
-
-        if (item === undefined) {
-            res.status(404).send(`Item with ID ${data.itemId} Not Found.`);
-            console.log(`[x] - ${data.email} requested item that does not exist.`);
-            return;
-        }
-
-        if (item.inventory === 0) {
-            res.status(403).send(`Cannot Reserve. Inventory of ${item.name} is currently 0.`);
-            console.log(`[x] - ${data.email} tried to reserve ${item.name} whose inventory is currently 0.`);
-            return;
+        if (data.itemId === null) {
+            res.status(403).send(`Item ID cannot be null.`);
+            console.log(`[x] - Someone tried to reserve an item without an ID.`);
+        } else if (data.email === null) {
+            res.status(403).send(`Email cannot be null.`);
+            console.log(`[x] - Someone tried to reserve an item without an email.`);
         } else {
-            const startDate: Date = new Date(), endDate: Date = new Date();
-            const timerValue = 1209600000 + ((23 - startDate.getHours()) * 3600000);
-
-            startDate.setDate(startDate.getDate() + 1);
-            endDate.setDate(startDate.getDate() + 14);
-
-            if(startDate.getDay() === 0 || startDate.getDay() === 6) {
-                res.status(403).send("Items cannot be picked up on weekends.");
-                console.log(`[x] - ${data.email} tried to pick up ${item.name} on the weekend.`);
-                return;
+            const result = await this.client.query('SELECT * FROM items WHERE ID=$1', [data.itemId]);
+            const item: Item = result.rows[0];
+    
+            if (item === undefined) {
+                res.status(404).send(`Item with ID ${data.itemId} Not Found.`);
+                console.log(`[x] - ${data.email} requested item that does not exist.`);
+            } else if (item.inventory === 0) {
+                res.status(403).send(`Cannot Reserve. Inventory of ${item.name} is currently 0.`);
+                console.log(`[x] - ${data.email} tried to reserve ${item.name} whose inventory is currently 0.`);
             } else {
-                console.log(`[~] - ${data.email} has ${item.name} from ${startDate.toDateString()} until ${endDate.toDateString()}.`);
-                
-                await this.client.query('UPDATE items SET inventory=inventory - 1 WHERE ID=$1;', 
-                    [item.id],
-                    (e: Error, result: any) => {
-                        if(e) {
-                            res.status(500).send(e);
-                            console.log(`[x] - ${e}`);
-                            return;
-                        } else {
-                            console.log(`[+] - Inventory for ${item.name} updated.`)
+                const startDate: Date = new Date(), endDate: Date = new Date();
+                const timerValue = 1209600000 + ((23 - startDate.getHours()) * 3600000);
+    
+                startDate.setDate(startDate.getDate() + 1);
+                endDate.setDate(startDate.getDate() + 14);
+    
+                if (startDate.getDay() === 0 || startDate.getDay() === 6) {
+                    res.status(403).send("Items cannot be picked up on weekends.");
+                    console.log(`[x] - ${data.email} tried to pick up ${item.name} on the weekend.`);
+                } else {
+                    console.log(`[~] - ${data.email} has ${item.name} from ${startDate.toDateString()} until ${endDate.toDateString()}.`);
+                    
+                    await this.client.query('UPDATE items SET inventory=inventory - 1 WHERE ID=$1;', 
+                        [item.id],
+                        (e: Error, result: any) => {
+                            if(e) {
+                                res.status(500).send(e);
+                                console.log(`[x] - ${e}`);
+                                return;
+                            } else {
+                                console.log(`[+] - Inventory for ${item.name} updated.`)
+                            }
                         }
-                    }
-                );
-                await this.client.query(`INSERT INTO reservations(
-                        itemId, 
-                        itemName,
-                        email, 
-                        startDate, 
-                        endDate, 
-                        returned
-                    ) VALUES($1, $2, $3, $4, $5, $6);`, [
-                        data.itemId,
-                        item.name,
-                        data.email,
-                        startDate,
-                        endDate,
-                        false
-                    ], 
-                    (e: Error, result: any) => {
-                        if(e) {
-                            res.status(500).send(e);
-                            console.log(`[x] - ${e}`);
-                            return;
-                        } else {
-                            console.log(`[+] - Reservation of ${item.name} for ${data.email} made.`);
-                            res.status(201).send('Success! Confirmation email sent.');
-                            return;
+                    );
+                    await this.client.query(`INSERT INTO reservations(
+                            itemId, 
+                            itemName,
+                            email, 
+                            startDate, 
+                            endDate, 
+                            returned
+                        ) VALUES($1, $2, $3, $4, $5, $6);`, [
+                            data.itemId,
+                            item.name,
+                            data.email,
+                            startDate,
+                            endDate,
+                            false
+                        ], 
+                        (e: Error, result: any) => {
+                            if(e) {
+                                res.status(500).send(e);
+                                console.log(`[x] - ${e}`);
+                                return;
+                            } else {
+                                console.log(`[+] - Reservation of ${item.name} for ${data.email} made.`);
+                                res.status(201).send('Success! Confirmation email sent.');
+                                return;
+                            }
                         }
-                    }
-                );
-
-                this.returnTimer(timerValue);
+                    );
+                    this.returnTimer(timerValue);
+                }
             }
         }
+        return;
     }
 
     public return = async (req: ReservationRequest, res: Response): Promise<void> => { 
         const data = req.body;
         const item = await this.client.query('SELECT itemId, returned FROM reservations WHERE ID=$1', [data.id]);
-        if (item.rows[0].returned === true) {
+        if (item.rows[0] === undefined) {
+            res.status(403).send("Order ID cannot be null.");
+            console.log(`[x] - Someone tried to return an item without a order id.`);
+        } else if (item.rows[0].returned === true) {
             res.status(403).send("Item already returned!");
-            console.log(`[x] - Reservation with ID ${data.id} returned item.`);
+            console.log(`[x] - Reservation with ID ${data.id} tried to re-return item.`);
         } else {
             await this.client.query('UPDATE reservations SET returned=$1 WHERE ID=$2;', 
             [true, data.id],
@@ -213,6 +223,7 @@ export class Controller {
                 }
             )
         }
+        return;
     }
 
     public listAllItems = async (req: ItemRequest, res: Response): Promise<void> => {
@@ -229,6 +240,7 @@ export class Controller {
                 }
             }
         );   
+        return;
     }
 
     public addItem = async (req: ItemRequest, res: Response): Promise<void> => {
@@ -261,40 +273,69 @@ export class Controller {
                 }
             );
         }
+        return;
     }
 
     public updateItem = async (req: ItemRequest, res: Response): Promise<void> => {
         const data = req.body;
-        await this.client.query(`UPDATE items SET name=$1, description=$2, inventory=$3 WHERE ID=$4;`, 
-            [data.name, data.description, data.inventory, data.id],
-            (e: Error, result: any) => {
-                if(e) {
-                    res.status(500).send(e);
-                    console.log(`[x] - ${e}`);
-                    return;
-                } else {
-                    res.status(200).send(`Successfully updated ${data.name} in items.`);
-                    console.log(`[+] - Updated ${data.name} in items.`);
-                    return;
-                }
+        if (data.id === null) {
+            res.status(403).send(`Item ID cannot be null.`);
+            console.log(`[x] - Someone tried to update an item withpit an ID.`);
+        } else {
+            const item = await this.client.query('SELECT * FROM items WHERE ID=$1', [data.id]);
+            if (item.rows[0] === undefined) {
+                res.status(404).send(`Item with ID ${data.id} Not Found.`);
+                console.log(`[x] - Someone tried to update an item that does not exist.`);
+            } else {
+                const name = data.name ? data.name : item.rows[0].name;
+                const description = data.description ? data.description : item.rows[0].description;
+                const inventory = data.inventory ? data.inventory : item.rows[0].inventory;
+                await this.client.query(`UPDATE items SET name=$1, description=$2, inventory=$3 WHERE ID=$4;`, 
+                    [name, description, inventory, data.id],
+                    (e: Error, result: any) => {
+                        if(e) {
+                            res.status(500).send(e);
+                            console.log(`[x] - ${e}`);
+                            return;
+                        } else {
+                            res.status(200).send(`Successfully updated ${name} in items.`);
+                            console.log(`[+] - Updated ${name} in items.`);
+                            return;
+                        }
+                    }
+                );
             }
-        );
+        }
+        return;
     }
 
     public removeItem = async (req: ItemRequest, res: Response): Promise<void> => {
-        await this.client.query(`DELETE FROM items WHERE ID=$1;`,
-            [req.body.id], 
-            (e: Error, result: any) => {
-                if (e) {
-                    res.status(500).send(e);
-                    console.log(`[x] - ${e}`);
-                    return;
-                } else {
-                    res.status(200).send(`Successfully deleted item with ID ${req.body.id} from items.`);
-                    console.log(`[-] - Deleted item with ID ${req.body.id} from items.`);
-                    return;
-                }
-             }
-        );
+        const data = req.body;
+        if (data.id === null) {
+            res.status(403).send(`Item ID cannot be null.`);
+            console.log(`[x] - Someone tried to remove an item without an ID.`);
+        } else {
+            const item = await this.client.query('SELECT * FROM items WHERE ID=$1', [data.id]);
+            if (item.rows[0] === undefined) {
+                res.status(404).send(`Item with ID ${data.id} Not Found.`);
+                console.log(`[x] - Someone tried to remove an item that does not exist.`);
+            } else {
+                await this.client.query(`DELETE FROM items WHERE ID=$1;`,
+                    [data.id], 
+                    (e: Error, result: any) => {
+                        if (e) {
+                            res.status(500).send(e);
+                            console.log(`[x] - ${e}`);
+                            return;
+                        } else {
+                            res.status(200).send(`Successfully deleted item with ID ${data.id} from items.`);
+                            console.log(`[-] - Deleted item with ID ${data.id} from items.`);
+                            return;
+                        }
+                    }
+                );
+            }
+        }
+        return;
     }
 }
