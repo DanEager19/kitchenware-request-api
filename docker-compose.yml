@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  express-server:
+    container_name: express-server
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_HOST=10.0.0.3
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DATABASE=api
+    depends_on:
+      - pg
+    ports:
+      - '0.0.0.0:3000:3000'
+    restart: always
+    networks:
+      vpcbr:
+        ipv4_address: 10.0.0.2
+  pg:
+    container_name: pg
+    image: postgres:14-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=api
+    ports:
+      - 5432:5432
+    networks:
+      vpcbr:
+        ipv4_address: 10.0.0.3
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/16
+          gateway: 10.0.0.1
