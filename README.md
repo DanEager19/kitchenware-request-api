@@ -6,7 +6,7 @@
 
 ## Dependencies
 ```sh
-This app requires Node.JS version 16 or later. It also uses Yarn and the Docker Engine.
+This app requires Node.JS version 16 or later. It also uses PostgreSQL.
 ```
 
 ## Installation
@@ -22,13 +22,17 @@ yarn test
 ```
 
 ## Usage
-For development environments:
+Compile the project:
 ```sh
-yarn start:dev (Note: An instance of PostgreSQL on localhost is required for non-container environments.)
+yarn build
 ```
-For deployment:
+Running in development environments:
 ```sh
-docker-compose up -d --build
+yarn start:dev
+```
+Running in production environments:
+```sh
+yarn start:prod
 ```
 ## Author
 
