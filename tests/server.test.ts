@@ -37,7 +37,6 @@ describe('Testing all routes.', () => {
         const res = await request(app)
             .post('/reserve')
             .send({
-                itemName: 'pan',
                 itemId: 1,
                 email: 'foo@bar.com',
             });
@@ -53,8 +52,7 @@ describe('Testing all routes.', () => {
         const res = await request(app)
             .post('/return')
             .send({
-                id: 1,
-                itemId: 1
+                id: 1
             });
         expect(res.statusCode).toEqual(200);
     });

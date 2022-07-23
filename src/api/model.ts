@@ -5,15 +5,6 @@ export interface Item {
     inventory: number,
 }
 
-export interface ItemRequest extends Express.Request{
-    body: {
-        id: number,
-        name: string,
-        description: string,
-        inventory: number,
-    }
-}
-
 export interface Reservation {
     id: number,
     itemName: string,
@@ -22,12 +13,36 @@ export interface Reservation {
     returned: boolean
 }
 
-export interface ReservationRequest extends Express.Request {
+export interface ReserveRequest extends Express.Request {
     body: {
-        id: number,
-        itemName: string,
         itemId: number, 
         email: string,
-        returned: boolean
+    }
+}
+
+export interface ReturnRequest extends Express.Request {
+    body: {
+        id: number, 
+    }
+}
+
+export interface AddItemRequest extends Express.Request {
+    body: {
+        name: string,
+        description: string, 
+        inventory: number
+    }
+}
+export interface UpdateItemRequest extends Express.Request {
+    body: {
+        id: number,
+        name: string,
+        description: string, 
+        inventory: number
+    }
+}
+export interface RemoveItemRequest extends Express.Request {
+    body: {
+        id: number,
     }
 }

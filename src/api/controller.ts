@@ -1,10 +1,20 @@
-import { Item, ReservationRequest, ItemRequest } from './model';
-import e, { Response } from 'express';
+import { 
+    Item, 
+    ReserveRequest, 
+    ReturnRequest, 
+    AddItemRequest, 
+    UpdateItemRequest, 
+    RemoveItemRequest  
+} from './model';
+import { Request, Response } from 'express';
 import { Client } from 'pg';
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import dotenv from 'dotenv';
 dotenv.config();
+
 export class Controller {
+    private santizedString: RegExp = /^[a-zA-Z0-9., ]+$/;
+
     private client: Client = new Client({
         user: process.env.POSTGRES_USER,
         host: process.env.POSTGRES_HOST,
@@ -16,7 +26,7 @@ export class Controller {
     public constructor() {
         this.client.connect()
         this.client.query(`
-            CREATE TEMP TABLE IF NOT EXISTS reservations(
+            CREATE TABLE IF NOT EXISTS reservations(
                 ID SERIAL PRIMARY KEY,
                 itemName TEXT,
                 itemId INT,
@@ -36,7 +46,7 @@ export class Controller {
         });
 
         this.client.query(`
-            CREATE TEMP TABLE IF NOT EXISTS items(
+            CREATE TABLE IF NOT EXISTS items(
                 ID SERIAL PRIMARY KEY,
                 name TEXT,
                 description TEXT,
@@ -55,44 +65,35 @@ export class Controller {
         return;
     }
 
-    private returnTimer = async (time: number): Promise<void> => {
+    private returnTimer = async (time: number, email: string): Promise<void> => {
         const reservationReturned = await this.client.query('SELECT returned, ID FROM reservations ORDER BY ID DESC');
-        await setTimeout(() => {
+        await setTimeout(async () => {
             if (!reservationReturned.rows[0].returned) {
+                const message = `Hi! <br> it seems you haven't returned the item in your possession yet!<br> Make sure you get it back to us ASAP!`
+                await this.sendEmail(email, message)
                 console.log(`[x] - Reservation with ID ${reservationReturned.rows[0].id} incomplete.`);
             }
         }, time);
         return;
     }
-/*
-    private sendEmail = async (userEmail: string, title: string, msg: string ): Promise<void> => {
-        const transporter = nodemailer.createTransort({
-            service: 'gmail',
-            auth: {
-                user: 'email',
-                pass: 'password',
-            }
-        });
-    
-        const mailOptions = {
-            from: 'email',
-            to: userEmail,
-            subject: title,
-            text: msg
+
+    private sendEmail = async (email: string, input: string): Promise<void> => {
+        typeof(process.env.SENDGRID_API_KEY) === 'string' ? sgMail.setApiKey(process.env.SENDGRID_API_KEY) : console.log('[x] - API key not set!');
+
+        const message = {
+            to: email,
+            from: 'dsucookinggardeningclub@gmail.com',
+            subject: 'Reservation',
+            html: input
         }
-    
-        await transporter.sendMail(mailOptions, (e: Error, info: any) => {
-            if (e) {
-                console.log(`[x] - ${e}`);
-                return;
-            } else {
-                console.log('[~] - Reminder email sent.');
-                return;
-            }
-        });
+        
+        await sgMail.send(message);
+        console.log(`[+] - Email sent to ${email}.`)
+
+        return;
     }
-*/
-    public showAllReservations = async (req: ReservationRequest, res: Response): Promise<void> => {
+
+    public showAllReservations = async (req: Request, res: Response): Promise<void> => {
         await this.client.query('SELECT * FROM reservations WHERE returned=false ORDER BY ID ASC;', 
             (e: Error, result: any) => {
                 if (e) {
@@ -109,14 +110,21 @@ export class Controller {
         return;
     }
 
-    public reserve = async (req: ReservationRequest, res: Response): Promise<void> => {
+    public reserve = async (req: ReserveRequest, res: Response): Promise<void> => {
         const data = req.body;
+        const email: RegExp = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
         if (data.itemId === null) {
             res.status(403).send(`Item ID cannot be null.`);
             console.log(`[x] - Someone tried to reserve an item without an ID.`);
         } else if (data.email === null) {
             res.status(403).send(`Email cannot be null.`);
             console.log(`[x] - Someone tried to reserve an item without an email.`);
+        } else if (data.itemId === NaN) {
+            res.status(403).send("ID provided is not a number.");
+            console.log('[x] - Someone just tried to input a non-number ID.')
+        } else if (!email.test(data.email)) {
+            res.status(403).send("Email provided is invalid.");
+            console.log('[x] - Someone just tried to input a bad email.')
         } else {
             const result = await this.client.query('SELECT * FROM items WHERE ID=$1', [data.itemId]);
             const item: Item = result.rows[0];
@@ -138,6 +146,8 @@ export class Controller {
                     res.status(403).send("Items cannot be picked up on weekends.");
                     console.log(`[x] - ${data.email} tried to pick up ${item.name} on the weekend.`);
                 } else {
+                    const message = `Hi!<br><br>You have <b>${item.name}</b> from ${startDate} to ${endDate}.<br> Talk to an officer about when you can pick it up.`
+                    await this.sendEmail(data.email, message);
                     console.log(`[~] - ${data.email} has ${item.name} from ${startDate.toDateString()} until ${endDate.toDateString()}.`);
                     
                     await this.client.query('UPDATE items SET inventory=inventory - 1 WHERE ID=$1;', 
@@ -179,17 +189,20 @@ export class Controller {
                             }
                         }
                     );
-                    this.returnTimer(timerValue);
+                    this.returnTimer(timerValue, data.email);
                 }
             }
         }
         return;
     }
 
-    public return = async (req: ReservationRequest, res: Response): Promise<void> => { 
+    public return = async (req: ReturnRequest, res: Response): Promise<void> => { 
         const data = req.body;
         const item = await this.client.query('SELECT itemId, returned FROM reservations WHERE ID=$1', [data.id]);
-        if (item.rows[0] === undefined) {
+        if (data.id === NaN) {
+            res.status(403).send("ID porvided is not a number.");
+            console.log('[x] - Someone just tried to input a non-number ID.')
+        } else if (item.rows[0] === undefined) {
             res.status(403).send("Order ID cannot be null.");
             console.log(`[x] - Someone tried to return an item without a order id.`);
         } else if (item.rows[0].returned === true) {
@@ -226,7 +239,7 @@ export class Controller {
         return;
     }
 
-    public listAllItems = async (req: ItemRequest, res: Response): Promise<void> => {
+    public listAllItems = async (req: Request, res: Response): Promise<void> => {
         await this.client.query('SELECT * FROM items ORDER BY ID ASC;', 
             (e: Error, result: any) => {
                 if (e) {
@@ -243,7 +256,7 @@ export class Controller {
         return;
     }
 
-    public addItem = async (req: ItemRequest, res: Response): Promise<void> => {
+    public addItem = async (req: AddItemRequest, res: Response): Promise<void> => {
         const data = req.body;
         if (data.name === null) {
             res.status(403).send(`Item name cannot be null.`);
@@ -254,6 +267,9 @@ export class Controller {
         } else if (data.inventory === null) {
             res.status(403).send(`Item inventory cannot be null.`);
             console.log(`[x] - Someone tried to register an item without a inventory.`);
+        } else if (!this.santizedString.test(data.name) || !this.santizedString.test(data.description) || data.inventory === NaN) {
+            res.status(403).send(`Wuh-oh, Looks like you entered some bad characters! Try again!`);
+            console.log(`[x] - Someone entered bad characters as input`);
         } else {
             await this.client.query(`INSERT INTO items(
                     name,
@@ -276,11 +292,14 @@ export class Controller {
         return;
     }
 
-    public updateItem = async (req: ItemRequest, res: Response): Promise<void> => {
+    public updateItem = async (req: UpdateItemRequest, res: Response): Promise<void> => {
         const data = req.body;
         if (data.id === null) {
             res.status(403).send(`Item ID cannot be null.`);
             console.log(`[x] - Someone tried to update an item withpit an ID.`);
+        } else if (!this.santizedString.test(data.name) || !this.santizedString.test(data.description) || data.inventory === NaN) {
+            res.status(403).send(`Wuh-oh, Looks like you entered some bad characters! Try again!`);
+            console.log(`[x] - Someone entered bad characters as input`);
         } else {
             const item = await this.client.query('SELECT * FROM items WHERE ID=$1', [data.id]);
             if (item.rows[0] === undefined) {
@@ -309,11 +328,14 @@ export class Controller {
         return;
     }
 
-    public removeItem = async (req: ItemRequest, res: Response): Promise<void> => {
+    public removeItem = async (req: RemoveItemRequest, res: Response): Promise<void> => {
         const data = req.body;
         if (data.id === null) {
             res.status(403).send(`Item ID cannot be null.`);
             console.log(`[x] - Someone tried to remove an item without an ID.`);
+        } else if (data.id === NaN) {
+            res.status(403).send("ID provided is not a number.");
+            console.log('[x] - Someone just tried to input a non-number ID.')
         } else {
             const item = await this.client.query('SELECT * FROM items WHERE ID=$1', [data.id]);
             if (item.rows[0] === undefined) {
