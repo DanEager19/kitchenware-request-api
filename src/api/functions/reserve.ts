@@ -1,8 +1,8 @@
 import { Client } from "pg";
 import {  Response } from 'express';
 import { Item, ReserveRequest } from "../model";
-import { returnTimer } from "./sendEmail";
-import { sendEmail } from "./returnTimer";
+import { returnTimer } from "./returnTimer";
+import { sendEmail } from "./sendEmail";
 
 export const reserve = async (client: Client, req: ReserveRequest, res: Response): Promise<void> => {
     const data = req.body;
